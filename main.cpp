@@ -1,18 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
 #include "solve.h"
 
 int debug;
+int restr;
 
 int main(int argc, char* argv[])
 {
     int n;
-    double  *a, *b, *x;
+    double  *a, *ta, *b, *tb, *x;
     opterr = 0;
-    int opt, restr = 5;
+    int opt;
+    restr = 5;
     FILE* fin = NULL;
     timespec begin, end;
     debug = 0;
@@ -73,7 +76,9 @@ int main(int argc, char* argv[])
             return -1;
         }
         a =(double*) malloc(sizeof(double)*n*n);
+        ta =(double*) malloc(sizeof(double)*n*n);
         b =(double*) malloc(sizeof(double)*n);
+        tb =(double*) malloc(sizeof(double)*n);
         x =(double*) malloc(sizeof(double)*n);
         for(int i=0;i<n;i++)
         {
@@ -84,11 +89,13 @@ int main(int argc, char* argv[])
                     fprintf(stderr,"Corrupted file\n");
                     return -1;
                 }
+                ta[i*n+j]=a[i*n+j];
             }
             if(fscanf(fin,"%lf", &b[i])!=1) {
                 fprintf(stderr,"Corrupted file\n");
                 return -1;
             }
+            tb[i]=b[i];
         }
     }
     printf("Equation:\n");
@@ -122,7 +129,7 @@ int main(int argc, char* argv[])
        
     }
     clock_gettime(CLOCK_MONOTONIC,&begin);
-    if(solve(n,a,b,x)){ // TODO: debug mode + testsi + norma nevyazki
+    if(solve(n,a,b,x)){ // TODO: testi
         clock_gettime(CLOCK_MONOTONIC, &end);
         printf("\nTime spent:%lfns\n",((end.tv_sec-begin.tv_sec)+(double)(end.tv_nsec-begin.tv_nsec)/100000000));
         printf("\n\nSolution:\n");
@@ -143,6 +150,18 @@ int main(int argc, char* argv[])
             printf("%.2lf\n",x[n-1]);
         }
 
+        double eps=0;
+        for(int i=0;i<n;i++)
+        {
+            double sq=0;
+            for(int j=0;j<n;j++)
+            {
+                sq+=ta[i*n+j]*x[j];
+            }
+            sq-=tb[i];
+            eps+=sq*sq;
+        }
+        printf("Residual : %lf\n", sqrt(eps));
     }
     else
     {
