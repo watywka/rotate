@@ -48,9 +48,6 @@ int solve(int n, double* a, double* b, double* x)
     {
         for(int i = j+1; i<n;i++)
         {
-            if (debug)
-            {
-            }
             sq = sqrt(a[A(j,j)]*a[A(j,j)] + a[A(i,j)]*a[A(i,j)]);
             if(eq(sq,0)) return 0;
             cphi = a[A(j,j)]/sq;

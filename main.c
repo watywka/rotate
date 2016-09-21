@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     debug = 0;
     if(argc == 1)
     {
-        fprintf(stderr,"Usage: solve [options] \n   -f   file with the linear system of equations\n   -d   debug mode\n   -r   output restrictions\n");
+        fprintf(stderr,"Usage: solve [options] \n   -f   file with the linear system of equations\n OR\n   -e   equation\n   -d   debug mode\n   -r   output restrictions\n");
         return 1;
     }
     while((opt = getopt(argc,argv,"df:r:")) != -1)
@@ -53,6 +53,7 @@ int main(int argc, char* argv[])
                 return -1;
             }
             fprintf(stderr, "%c: unknown option\n", optopt);
+            return -1;
             break;
         default:
             return -1;
@@ -78,11 +79,27 @@ int main(int argc, char* argv[])
 			fclose(fin);
             return -1;
         }
-        a =(double*) malloc(sizeof(double)*n*n);
-        ta =(double*) malloc(sizeof(double)*n*n);
-        b =(double*) malloc(sizeof(double)*n);
-        tb =(double*) malloc(sizeof(double)*n);
-        x =(double*) malloc(sizeof(double)*n);
+        if(!(a=(double*) malloc(sizeof(double)*n*n)))
+        {
+            fprintf(stderr,"Can't allocate memory\n");
+            return -1;
+        }
+        if(!(ta =(double*) malloc(sizeof(double)*n*n)))
+        {
+            fprintf(stderr,"Can't allocate memory\n");
+        }
+        if(!(b =(double*) malloc(sizeof(double)*n)))
+        {
+            fprintf(stderr,"Can't allocate memory\n");
+        }
+        if(!(tb =(double*) malloc(sizeof(double)*n)))
+        {
+            fprintf(stderr,"Can't allocate memory\n");
+        }
+        if(!(x =(double*) malloc(sizeof(double)*n)))
+        {
+            fprintf(stderr,"Can't allocate memory\n");
+        }
         for(int i=0;i<n;i++)
         {
             for(int j=0;j<n;j++)
@@ -91,6 +108,11 @@ int main(int argc, char* argv[])
                 {
                     fprintf(stderr,"Corrupted file\n");
 					fclose(fin);
+                    free(ta);
+                    free(tb);
+                    free(a);
+                    free(b);
+                    free(x);
                     return -1;
                 }
                 ta[i*n+j]=a[i*n+j];
@@ -98,6 +120,11 @@ int main(int argc, char* argv[])
             if(fscanf(fin,"%lf", &b[i])!=1) {
                 fprintf(stderr,"Corrupted file\n");
 				fclose(fin);
+                free(ta);
+                free(tb);
+                free(a);
+                free(b);
+                free(x);
                 return -1;
             }
             tb[i]=b[i];
@@ -150,7 +177,6 @@ int main(int argc, char* argv[])
     free(tb);
     free(a);
     free(b);
-
     free(x);
     return 1;
 
