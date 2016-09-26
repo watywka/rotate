@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <time.h>
 #include "solve.h"
+#define N 100
 
 int debug;
 int restr;
@@ -13,8 +14,10 @@ int main(int argc, char* argv[])
     int n;
     double  *a, *ta, *b, *tb, *x;
     int opt;
+    int fflag = 0,xflag = 0;
     struct timespec begin, end;
     FILE* fin = NULL;
+    enum FUNC xin;
     opterr = 0;
     restr = 5;
     debug = 0;
@@ -23,13 +26,45 @@ int main(int argc, char* argv[])
         fprintf(stderr,"Usage: solve [options] \n   -f   file with the linear system of equations\n OR\n   -e   equation\n   -d   debug mode\n   -r   output restrictions\n");
         return 1;
     }
-    while((opt = getopt(argc,argv,"df:r:")) != -1)
+    while((opt = getopt(argc,argv,"dx:f:r:")) != -1)
     {
         switch(opt) {
         case 'd':
             debug=1;
             break;
+        case 'x':
+            if(xflag == 1)
+            {
+                fprintf(stderr,"Multiple usage of -g option is not allowed\n");
+                return -1;
+            }
+            if(fflag == 1)
+            {
+                fprintf(stderr,"-x and -f options cannot be used simultaneously\n");
+                fclose(fin);
+                return -1;
+            }
+            xflag = 1;
+            xin = formula(optarg);
+            if(xin == errf)
+            {
+                fprintf(stderr,"Unknown formula\n");
+                return -1;
+            } 
+            break;
         case 'f':
+            if(fflag == 1)
+            {
+                fprintf(stderr,"Multiple usage of -f option is not allowed\n");
+                fclose(fin);
+                return -1;
+            }
+            if(xflag == 1)
+            {
+                fprintf(stderr,"-x and -f options cannot be used simultaneously\n");
+                return -1;
+            }
+            fflag = 1;
             fin = fopen(optarg,"r");
             if(!fin) {
                 fprintf(stderr,"File not found\n");
@@ -48,7 +83,7 @@ int main(int argc, char* argv[])
             }
             break;
         case '?':
-            if((optopt == 'r') || (optopt == 'f')) {
+            if((optopt == 'r') || (optopt == 'f') || (optopt == 'x')) {
                 fprintf(stderr,"-%c requires an argument\n",optopt);
                 return -1;
             }
@@ -62,10 +97,36 @@ int main(int argc, char* argv[])
     if(optind<argc)
     {
         fprintf(stderr,"Wrong options format\n");
-		fclose(fin);
+        if(fflag)
+		    fclose(fin);
 		return -1;
     } 
-    if(fin)
+    if( (!fflag) && (!xflag))
+    {
+        fprintf(stderr,"No file or formula provided\n");
+        return -1;
+    }
+    if(xflag)
+    {
+        n=N;
+        if(!(a=(double*) malloc(sizeof(double)*n*n))
+               ||(!(ta =(double*) malloc(sizeof(double)*n*n)))
+               ||(!(b =(double*) malloc(sizeof(double)*n)))
+               ||(!(tb =(double*) malloc(sizeof(double)*n)))
+               ||(!(x =(double*) malloc(sizeof(double)*n))))
+        { 
+            fprintf(stderr,"Can't allocate memory\n");
+            return -1;
+        }
+        fill(xin, n, a); 
+        for(int i=0; i<n; i++)
+        {
+            b[i]=100;
+            tb[i]=100;
+        }
+        memcpy(ta,a,N*n);
+    }
+    if(fflag)
     {
         if(fscanf(fin,"%d", &n)!=1)
         {
@@ -79,26 +140,15 @@ int main(int argc, char* argv[])
 			fclose(fin);
             return -1;
         }
-        if(!(a=(double*) malloc(sizeof(double)*n*n)))
+        if(!(a=(double*) malloc(sizeof(double)*n*n))
+                ||(!(ta =(double*) malloc(sizeof(double)*n*n)))
+                ||(!(b =(double*) malloc(sizeof(double)*n)))
+                ||(!(tb =(double*) malloc(sizeof(double)*n)))
+                ||(!(x =(double*) malloc(sizeof(double)*n))))
         {
             fprintf(stderr,"Can't allocate memory\n");
+			fclose(fin);
             return -1;
-        }
-        if(!(ta =(double*) malloc(sizeof(double)*n*n)))
-        {
-            fprintf(stderr,"Can't allocate memory\n");
-        }
-        if(!(b =(double*) malloc(sizeof(double)*n)))
-        {
-            fprintf(stderr,"Can't allocate memory\n");
-        }
-        if(!(tb =(double*) malloc(sizeof(double)*n)))
-        {
-            fprintf(stderr,"Can't allocate memory\n");
-        }
-        if(!(x =(double*) malloc(sizeof(double)*n)))
-        {
-            fprintf(stderr,"Can't allocate memory\n");
         }
         for(int i=0;i<n;i++)
         {
@@ -129,7 +179,7 @@ int main(int argc, char* argv[])
             }
             tb[i]=b[i];
         }
-	fclose(fin);
+        fclose(fin);
     }
     printf("Equation:\n");
     printm(stdout,n,a,b);
