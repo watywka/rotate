@@ -1,6 +1,6 @@
 #include "solve.h"
 #define A(i,j)  (i*n + j)
-#define eps 1.0e-5
+#define eps 1.0e-19
 #define eq(a,b) ((a-b<eps) && (b-a<eps))
 
 extern int debug;
@@ -8,13 +8,16 @@ extern int restr;
 
 enum FUNC formula(char* str)
 {
-    enum FUNC out;
     if(strcmp(str, "symm") == 0)
         return  symm;    
     if(strcmp(str, "positive_symm") == 0)
         return positive_symm;
     if(strcmp(str, "hilbert") == 0)
         return hilbert;
+	if(strcmp(str, "upper") == 0)
+		return upper;
+	if(strcmp(str,"disg")==0)
+		return disg;
     return errf;
 }
 
@@ -32,8 +35,20 @@ void fill(enum FUNC xin,int n, double* a)
                 a[A(i,j)] = 1+abs(i-j);
                 break;
             case hilbert:
-                a[A(i,j)] = 1/(double)(i+j+1);
+                a[A(i,j)] = 1./(double)(i+j+1);
                 break;
+			case upper:
+				if(i==j) a[A(i,j)] = 1;
+				if(i>j) a[A(i,j)] = 0;
+				if(i<j) a[A(i,j)] = -1;
+				break;
+			case disg:
+				if(i>j)
+					a[A(i,j)] = n-i;
+				else 
+					a[A(i,j)] = n-j;
+			case errf:
+				break;
               }
         }
     }

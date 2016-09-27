@@ -10,6 +10,8 @@ enum FUNC
     symm,
     positive_symm,
     hilbert,
+	upper,
+	disg,
     errf
 };
 extern int debug;
