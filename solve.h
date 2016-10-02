@@ -16,8 +16,8 @@ enum FUNC
 };
 extern int debug;
 enum FUNC formula(char* str);
-void fill(enum FUNC xin,int n, double* a);
-int solve(int n, double* a, double* b, double* x);
-void printm(FILE* fout, int n, double* a, double* b);
+void fill(enum FUNC xin,int n, long double* a);
+int solve(int n, long double* a, long double* b, long double* x);
+void printm(FILE* fout, int n, long double* a, long double* b);
 
 #endif

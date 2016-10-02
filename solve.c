@@ -21,7 +21,7 @@ enum FUNC formula(char* str)
     return errf;
 }
 
-void fill(enum FUNC xin,int n, double* a)
+void fill(enum FUNC xin,int n, long double* a)
 {
     for(int i=0;i<n;i++)
     {
@@ -35,7 +35,7 @@ void fill(enum FUNC xin,int n, double* a)
                 a[A(i,j)] = 1+abs(i-j);
                 break;
             case hilbert:
-                a[A(i,j)] = 1./(double)(i+j+1);
+                a[A(i,j)] = 1./(long double)(i+j+1);
                 break;
 			case upper:
 				if(i==j) a[A(i,j)] = 1;
@@ -53,7 +53,7 @@ void fill(enum FUNC xin,int n, double* a)
         }
     }
 }
-void printm(FILE* fout, int n, double* a, double* b)
+void printm(FILE* fout, int n, long double* a, long double* b)
 {
   if(restr > n-2)
     {
@@ -61,9 +61,9 @@ void printm(FILE* fout, int n, double* a, double* b)
         {
             for(int j=0;j<n;j++)
             {
-               fprintf(fout, "%.2f ",a[i*n+j]);
+               fprintf(fout, "%.4Lf ",a[i*n+j]);
             }
-           fprintf(fout, "   %.2f\n", b[i]);
+           fprintf(fout, "   %.4Lf\n", b[i]);
         }
     }
     else
@@ -72,32 +72,48 @@ void printm(FILE* fout, int n, double* a, double* b)
         {
             for(int j = 0; j<restr;j++)
             {
-               fprintf(fout,"%.2f ",a[i*n+j]);
+               fprintf(fout,"%.2Lf ",a[i*n+j]);
             }
-           fprintf(fout,".. %.2f    %.2f\n",a[i*n + n -1],b[i]);
+           fprintf(fout,".. %.2Lf    %.2Lf\n",a[i*n + n -1],b[i]);
         }
        fprintf(fout,"..\n");
         for(int j = 0; j<restr;j++)
         {
-            fprintf(fout,"%.2f ",a[(n-1)*n+j]);
+            fprintf(fout,"%.2Lf ",a[(n-1)*n+j]);
         }
-       fprintf(fout,".. %.2f    %.2f\n",a[(n-1)*n + n -1],b[n-1]);
+       fprintf(fout,".. %.2Lf    %.2Lf\n",a[(n-1)*n + n -1],b[n-1]);
        
     }
 
 }
 
-int solve(int n, double* a, double* b, double* x)
+int solve(int n, long double* a, long double* b, long double* x)
 {   
-    double sq, sphi, cphi, olx, oly;
+    long double sq, sphi, cphi, olx, oly;
     for(int j = 0;j<n-1;j++)
     {
         for(int i = j+1; i<n;i++)
         {
-            sq = sqrt(a[A(j,j)]*a[A(j,j)] + a[A(i,j)]*a[A(i,j)]);
-            if(eq(sq,0)) return 0;
-            cphi = a[A(j,j)]/sq;
-            sphi = - a[A(i,j)]/sq;
+            if(!eq(a[A(i,j)],0))
+            {
+                long double ratio = a[A(j,j)]/a[A(i,j)];
+                //sq = a[A(i,j)]*sqrt(1+ratio*ratio);
+                sphi = - 1 / sqrt(1+ratio*ratio);
+                if(a[A(i,j)]<0) sphi = -sphi;
+                cphi = sqrt(1-sphi*sphi);
+                if (a[A(j,j)]<0) cphi = -cphi;
+            }
+            else if(!eq(a[A(j,j)],0))
+            {
+                long double ratio = a[A(i,j)]/a[A(j,j)];
+                //sq = a[A(j,j)]*sqrt(1+ratio*ratio);
+                cphi = 1/sqrt(1+ratio*ratio);
+                if (a[A(j,j)]<0) cphi = -cphi;
+                sphi = -sqrt(1-cphi*cphi);
+                if(a[A(i,j)]<0) sphi = -sphi;
+            }
+            else return 0;
+            //printf("%Lf %Lf\n",a[A(i,j)],a[A(i,j)]);
             for(int k = j; k<n;k++)
             {
                 olx = a[A(j,k)];

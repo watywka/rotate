@@ -11,7 +11,7 @@ int restr;
 int main(int argc, char* argv[])
 {
     int n = 15;
-    double  *a, *ta, *b, *tb, *x;
+    long double  *a, *ta, *b, *tb, *x;
     int opt;
     int fflag = 0,xflag = 0;
     struct timespec begin, end;
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     debug = 0;
     if(argc == 1)
     {
-        fprintf(stderr,"Usage: solve [options] \n   -f   file with the linear system of equations\n OR\n   -e   equation\n   -d   debug mode\n   -r   output restrictions\n   -x   name of formula\n   -n   size of matrix");
+        fprintf(stderr,"Usage: solve [options] \n   -f   file with the linear system of equations\n OR\n   -x   name of formula\n   -d   debug mode\n   -r   output restrictions\n   -n   size of matrix\n");
         return 1;
     }
     while((opt = getopt(argc,argv,"dx:f:r:n:")) != -1)
@@ -119,11 +119,11 @@ int main(int argc, char* argv[])
     }
     if(xflag)
     {
-        if(!(a=(double*) malloc(sizeof(double)*n*n))
-               ||(!(ta =(double*) malloc(sizeof(double)*n*n)))
-               ||(!(b =(double*) malloc(sizeof(double)*n)))
-               ||(!(tb =(double*) malloc(sizeof(double)*n)))
-               ||(!(x =(double*) malloc(sizeof(double)*n))))
+        if(!(a=(long double*) malloc(sizeof(long double)*n*n))
+               ||(!(ta =(long double*) malloc(sizeof(long double)*n*n)))
+               ||(!(b =(long double*) malloc(sizeof(long double)*n)))
+               ||(!(tb =(long double*) malloc(sizeof(long double)*n)))
+               ||(!(x =(long double*) malloc(sizeof(long double)*n))))
         { 
 			if(a) free(a);
 			if(ta) free(ta);
@@ -159,11 +159,11 @@ int main(int argc, char* argv[])
 			fclose(fin);
             return -1;
         }
-        if(!(a=(double*) malloc(sizeof(double)*n*n))
-                ||(!(ta =(double*) malloc(sizeof(double)*n*n)))
-                ||(!(b =(double*) malloc(sizeof(double)*n)))
-                ||(!(tb =(double*) malloc(sizeof(double)*n)))
-                ||(!(x =(double*) malloc(sizeof(double)*n))))
+        if(!(a=(long double*) malloc(sizeof(long double)*n*n))
+                ||(!(ta =(long double*) malloc(sizeof(long double)*n*n)))
+                ||(!(b =(long double*) malloc(sizeof(long double)*n)))
+                ||(!(tb =(long double*) malloc(sizeof(long double)*n)))
+                ||(!(x =(long double*) malloc(sizeof(long double)*n))))
         { 
 			if(a) free(a);
 			if(ta) free(ta);
@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
         {
             for(int j=0;j<n;j++)
             {
-                if(fscanf(fin,"%lf", &a[i*n+j])!=1)
+                if(fscanf(fin,"%Lf", &a[i*n+j])!=1)
                 {
                     fprintf(stderr,"Corrupted file\n");
 					fclose(fin);
@@ -191,7 +191,7 @@ int main(int argc, char* argv[])
                 }
                 ta[i*n+j]=a[i*n+j];
             }
-            if(fscanf(fin,"%lf", &b[i])!=1) {
+            if(fscanf(fin,"%Lf", &b[i])!=1) {
                 fprintf(stderr,"Corrupted file\n");
 				fclose(fin);
                 free(ta);
@@ -218,17 +218,17 @@ int main(int argc, char* argv[])
         {
             for(int i=0;i<n;i++)
             {
-                printf("%.2f\n",x[i]);
+                printf("%.2Lf\n",x[i]);
             }
         }
         else
         {
             for(int i=0;i<restr;i++)
             {
-                printf("%.2f\n",x[i]);
+                printf("%.2Lf\n",x[i]);
             }
             printf("..\n");
-            printf("%.2f\n",x[n-1]);
+            printf("%.2Lf\n",x[n-1]);
         }
         for(int i=0;i<n;i++)
         {
@@ -237,7 +237,7 @@ int main(int argc, char* argv[])
             {
                 sq+=ta[i*n+j]*x[j];
             }
-			printf("%f\n",sq);
+			//printf("%f\n",sq);
             sq-=tb[i];
             eps+=sq*sq;
         }
