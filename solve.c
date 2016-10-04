@@ -2,6 +2,7 @@
 #define A(i,j)  (i*n + j)
 #define eps 1.0e-19
 #define eq(a,b) ((a-b<eps) && (b-a<eps))
+#define jord_c 5
 
 extern int debug;
 extern int restr;
@@ -18,6 +19,8 @@ enum FUNC formula(char* str)
 		return upper;
 	if(strcmp(str,"disg")==0)
 		return disg;
+	if(strcmp(str,"jord")==0)
+		return jord;
     return errf;
 }
 
@@ -47,6 +50,13 @@ void fill(enum FUNC xin,int n, long double* a)
 					a[A(i,j)] = n-i;
 				else 
 					a[A(i,j)] = n-j;
+			case jord:
+				if(i==j)
+					a[A(i,j)] = 1;
+				else if(i==j-1)
+					a[A(i,j)] = jord_c;
+				else
+					a[A(i,j)] = 0;
 			case errf:
 				break;
               }
@@ -61,9 +71,9 @@ void printm(FILE* fout, int n, long double* a, long double* b)
         {
             for(int j=0;j<n;j++)
             {
-               fprintf(fout, "%.4Lf ",a[i*n+j]);
+               fprintf(fout, "%.2Lf ",a[i*n+j]);
             }
-           fprintf(fout, "   %.4Lf\n", b[i]);
+           fprintf(fout, "   %.2Lf\n", b[i]);
         }
     }
     else
@@ -89,31 +99,18 @@ void printm(FILE* fout, int n, long double* a, long double* b)
 
 int solve(int n, long double* a, long double* b, long double* x)
 {   
-    long double sq, sphi, cphi, olx, oly;
+
+    long double sphi, cphi, olx, oly, sq;
+	struct timespec begin, end;
+	clock_gettime(CLOCK_MONOTONIC,&begin);
     for(int j = 0;j<n-1;j++)
     {
         for(int i = j+1; i<n;i++)
-        {
-            if(!eq(a[A(i,j)],0))
-            {
-                long double ratio = a[A(j,j)]/a[A(i,j)];
-                //sq = a[A(i,j)]*sqrt(1+ratio*ratio);
-                sphi = - 1 / sqrt(1+ratio*ratio);
-                if(a[A(i,j)]<0) sphi = -sphi;
-                cphi = sqrt(1-sphi*sphi);
-                if (a[A(j,j)]<0) cphi = -cphi;
-            }
-            else if(!eq(a[A(j,j)],0))
-            {
-                long double ratio = a[A(i,j)]/a[A(j,j)];
-                //sq = a[A(j,j)]*sqrt(1+ratio*ratio);
-                cphi = 1/sqrt(1+ratio*ratio);
-                if (a[A(j,j)]<0) cphi = -cphi;
-                sphi = -sqrt(1-cphi*cphi);
-                if(a[A(i,j)]<0) sphi = -sphi;
-            }
-            else return 0;
-            //printf("%Lf %Lf\n",a[A(i,j)],a[A(i,j)]);
+        { 
+		    sq = sqrt(a[A(j,j)]*a[A(j,j)] + a[A(i,j)]*a[A(i,j)]);
+            if(eq(sq,0)) return 0;
+            cphi = a[A(j,j)]/sq;
+            sphi = - a[A(i,j)]/sq;
             for(int k = j; k<n;k++)
             {
                 olx = a[A(j,k)];
@@ -128,6 +125,9 @@ int solve(int n, long double* a, long double* b, long double* x)
             
         }
     }
+	clock_gettime(CLOCK_MONOTONIC,&end);
+	printf("\nTime spent:%fs\n",((end.tv_sec-begin.tv_sec)+(double)(end.tv_nsec-begin.tv_nsec)/1000000000));
+
     if(debug)
     {
         fprintf(stderr,"\n\nUpper triangular form:\n");

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <time.h>
 
 enum FUNC
 {
@@ -12,6 +13,7 @@ enum FUNC
     hilbert,
 	upper,
 	disg,
+	jord,
     errf
 };
 extern int debug;

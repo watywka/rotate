@@ -2,7 +2,6 @@
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
 #include "solve.h"
 
 int debug;
@@ -10,7 +9,7 @@ int restr;
 
 int main(int argc, char* argv[])
 {
-    int n = 15;
+    int n = 10;
     long double  *a, *ta, *b, *tb, *x;
     int opt;
     int fflag = 0,xflag = 0;
@@ -212,7 +211,7 @@ int main(int argc, char* argv[])
 	{ 
         double eps=0;
         clock_gettime(CLOCK_MONOTONIC, &end);
-        printf("\nTime spent:%fs\n",((end.tv_sec-begin.tv_sec)+(double)(end.tv_nsec-begin.tv_nsec)/100000000));
+        printf("\nTime spent:%fs\n",((end.tv_sec-begin.tv_sec)+(double)(end.tv_nsec-begin.tv_nsec)/1000000000));
         printf("\n\nSolution:\n");
         if (restr > n-2)
         {
@@ -230,6 +229,7 @@ int main(int argc, char* argv[])
             printf("..\n");
             printf("%.2Lf\n",x[n-1]);
         }
+	{
         for(int i=0;i<n;i++)
         {
             double sq=0;
@@ -242,9 +242,10 @@ int main(int argc, char* argv[])
             eps+=sq*sq;
         }
         printf("Residual || AX - B|| : %f\n", (eps));
-		if(xflag)
-		{
-			eps = 0;
+	}		
+	if(xflag)
+	{
+	   eps = 0;
 			for(int i=0;i<n;i++)
 			{
 				eps+=(x[i]-(i%2))*(x[i]-(i%2));
